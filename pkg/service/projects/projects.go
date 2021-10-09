@@ -31,7 +31,9 @@ func Create(ctx context.Context, in *proto_projects.ProjectMeta) (out *proto_pro
 	// Create new project
 	out = &proto_projects.ProjectInfo{
 		Metadata: in,
-		Id:       uuid.New().String(),
+		Id:	&proto_projects.ProjectId{
+			Id: uuid.New().String(),
+		},	
 	}
 
 	code, err := repo.CreateProject(ctx, out)

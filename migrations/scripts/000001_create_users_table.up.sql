@@ -6,5 +6,4 @@ CREATE TABLE projects(
   bpm INTEGER,
   key TEXT,
   genre TEXT,
-  mood TEXT
 );

@@ -34,7 +34,6 @@ func (r ProjectRepo) CreateProject(ctx context.Context, project *proto_projects.
 		project.Id, project.Metadata.Name,
 		project.Metadata.Description, project.Metadata.Public,
 		project.Metadata.Bpm, project.Metadata.Key,
-		project.Metadata.Genre, project.Metadata.Mood,
 	)
 
 	if err != nil {
@@ -62,7 +61,6 @@ func (r ProjectRepo) UpdateProject(ctx context.Context, project *proto_projects.
 		project.Id, project.Metadata.Name,
 		project.Metadata.Description, project.Metadata.Public,
 		project.Metadata.Bpm, project.Metadata.Key,
-		project.Metadata.Genre, project.Metadata.Mood,
 	)
 
 	if err != nil {
@@ -90,11 +88,9 @@ func (r ProjectRepo) GetProject(ctx context.Context, projectID *proto_projects.P
 	err := r.Pool.QueryRow(ctx, sql, projectID.GetId()).Scan(
 		&projectMeta.Name, &projectMeta.Description,
 		&projectMeta.Public, &projectMeta.Bpm, &projectMeta.Key, &projectMeta.Genre,
-		&projectMeta.Mood,
 	)
 
 	project := &proto_projects.ProjectInfo{
-		Id:       projectID.GetId(),
 		Metadata: projectMeta,
 	}
 
@@ -150,7 +146,6 @@ func (r ProjectRepo) ListUsers(ctx context.Context, stream proto_projects.Projec
 			&project.Id, &projectMeta.Name,
 			&projectMeta.Description, &projectMeta.Public,
 			&projectMeta.Bpm, &projectMeta.Key,
-			&projectMeta.Genre, &projectMeta.Mood,
 		)
 		if err != nil {
 			log.Error(err)
