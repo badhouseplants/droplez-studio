@@ -27,13 +27,16 @@ type ProjectRepo struct {
 }
 
 func (r ProjectRepo) CreateProject(ctx context.Context, project *proto_projects.ProjectInfo) (code codes.Code, err error) {
-	const sql = "INSERT INTO projects (id, name, description, public, bpm, key, genre, mood) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+	const sql = `INSERT INTO projects 
+								(id, name, daw, description, public, bpm, key, genre) 
+								VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
 
 	var log = logger.GetGrpcLogger(ctx)
 	_, err = r.Pool.Exec(ctx, sql,
-		project.Id, project.Metadata.Name,
-		project.Metadata.Description, project.Metadata.Public,
-		project.Metadata.Bpm, project.Metadata.Key,
+		project.Id.Id, project.Metadata.Name,
+		project.Metadata.Daw.String(), project.Metadata.Description,
+		project.Metadata.Public, project.Metadata.Bpm,
+		project.Metadata.Key, project.Metadata.Genre,
 	)
 
 	if err != nil {
@@ -47,6 +50,8 @@ func (r ProjectRepo) CreateProject(ctx context.Context, project *proto_projects.
 				return codes.Internal, err
 			}
 		}
+		log.Error(err)
+		return codes.Internal, err
 	}
 
 	return codes.OK, nil
@@ -80,7 +85,7 @@ func (r ProjectRepo) UpdateProject(ctx context.Context, project *proto_projects.
 }
 
 func (r ProjectRepo) GetProject(ctx context.Context, projectID *proto_projects.ProjectId) (*proto_projects.ProjectInfo, codes.Code, error) {
-	const sql = "SELECT name, description, public, bpm, key, genre, mood FROM projects WHERE id = $1"
+	const sql = "SELECT name, description, public, bpm, key, genre, mood,  FROM projects WHERE id = $1"
 
 	var log = logger.GetGrpcLogger(ctx)
 	var projectMeta = &proto_projects.ProjectMeta{}

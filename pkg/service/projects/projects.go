@@ -75,7 +75,7 @@ func Get(ctx context.Context, in *proto_projects.ProjectId) (*proto_projects.Pro
 func Delete(ctx context.Context, in *proto_projects.ProjectInfo) (*common.EmptyMessage, error) {
 	repo := initRepo(ctx)
 	projectID := &proto_projects.ProjectId{
-		Id: in.GetId(),
+		Id: in.GetId().GetId(),
 	}
 	projectGotten, code, err := repo.GetProject(ctx, projectID)
 	if err != nil {

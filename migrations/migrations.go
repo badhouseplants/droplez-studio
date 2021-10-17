@@ -3,8 +3,8 @@ package migrations
 import (
 	"fmt"
 
-	"github.com/droplez/droplez-studio/tools/logger"
 	postgresClient "github.com/droplez/droplez-studio/third_party/postgres"
+	"github.com/droplez/droplez-studio/tools/logger"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

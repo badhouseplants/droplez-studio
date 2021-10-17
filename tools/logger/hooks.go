@@ -6,9 +6,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func EnpointHit(ctx context.Context) *logrus.Entry{
+func EndpointHit(ctx context.Context) *logrus.Entry{
 	log := GetGrpcLogger(ctx)
-	log.Info("enpoint hit")
+	log.Info("endpoint hit")
 	return logger
 }
 

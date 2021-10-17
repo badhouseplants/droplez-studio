@@ -1,4 +1,4 @@
-package projects_rpc
+package projects_api
 
 import (
 	"context"
@@ -19,27 +19,27 @@ func Register(grpcServer *grpc.Server) {
 }
 
 func (s projectsGrpcImpl) Create(ctx context.Context, in *proto_projects.ProjectMeta) (*proto_projects.ProjectInfo, error) {
-	logger.EnpointHit(ctx)
+	logger.EndpointHit(ctx)
 	return service_projects.Create(ctx, in)
 }
 
 func (s projectsGrpcImpl) Update(ctx context.Context, in *proto_projects.ProjectInfo) (*proto_projects.ProjectInfo, error) {
-	logger.EnpointHit(ctx)
+	logger.EndpointHit(ctx)
 	return service_projects.Update(ctx, in)
 }
 
 func (s projectsGrpcImpl) Get(ctx context.Context, in *proto_projects.ProjectId) (*proto_projects.ProjectInfo, error) {
-	logger.EnpointHit(ctx)
+	logger.EndpointHit(ctx)
 	return service_projects.Get(ctx, in)
 }
 
 func (s projectsGrpcImpl) Delete(ctx context.Context, in *proto_projects.ProjectInfo) (*common.EmptyMessage, error) {
-	logger.EnpointHit(ctx)
+	logger.EndpointHit(ctx)
 	return service_projects.Delete(ctx, in)
 }
 
 func (s projectsGrpcImpl) List(in *proto_projects.ListOptions, stream proto_projects.Projects_ListServer) (err error) {
-	logger.EnpointHit(stream.Context())
+	logger.EndpointHit(stream.Context())
 	err = service_projects.List(stream.Context(), stream, in)
 	if err != nil {
 		return

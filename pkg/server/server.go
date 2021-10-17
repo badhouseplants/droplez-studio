@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	projects_rpc "github.com/droplez/droplez-studio/pkg/api/projects"
+	projects_api "github.com/droplez/droplez-studio/pkg/api/projects"
 	"github.com/droplez/droplez-studio/tools/logger"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -23,7 +23,7 @@ var opts = []grpc.ServerOption{grpc.MaxRecvMsgSize(2147483648), setupGrpcUnaryOp
 var grpcServer = func() (grpcServer *grpc.Server) {
 	grpcServer = grpc.NewServer(opts...)
 	// Register services
-	projects_rpc.Register(grpcServer)
+	projects_api.Register(grpcServer)
 	reflection.Register(grpcServer)
 	return
 }

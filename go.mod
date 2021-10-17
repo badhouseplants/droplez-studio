@@ -3,7 +3,7 @@ module github.com/droplez/droplez-studio
 go 1.17
 
 require (
-	github.com/droplez/droplez-go-proto v0.0.1-init-13
+	github.com/droplez/droplez-go-proto v0.0.1-init-27
 	github.com/golang-migrate/migrate/v4 v4.15.0
 	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
