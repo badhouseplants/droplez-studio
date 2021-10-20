@@ -1,11 +1,11 @@
-package projects_repo
+package repo
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	proto_projects "github.com/droplez/droplez-go-proto/pkg/studio/projects"
+	"github.com/droplez/droplez-go-proto/pkg/studio/projects"
 	"github.com/droplez/droplez-studio/tools/logger"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -14,19 +14,11 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-type ProjectStore interface {
-	CreateProject(context.Context, *proto_projects.ProjectInfo) (codes.Code, error)
-	UpdateProject(context.Context, *proto_projects.ProjectInfo) (codes.Code, error)
-	GetProject(context.Context, *proto_projects.ProjectId) (*proto_projects.ProjectInfo, codes.Code, error)
-	DeleteProject(context.Context, *proto_projects.ProjectId) (codes.Code, error)
-	ListUsers(context.Context, proto_projects.Projects_ListServer, *proto_projects.ListOptions) (codes.Code, error)
-}
-
 type ProjectRepo struct {
 	Pool *pgxpool.Conn
 }
 
-func (r ProjectRepo) CreateProject(ctx context.Context, project *proto_projects.ProjectInfo) (code codes.Code, err error) {
+func (r ProjectRepo) CreateProject(ctx context.Context, project *projects.ProjectInfo) (code codes.Code, err error) {
 	const sql = `INSERT INTO projects 
 								(id, name, daw, description, public, bpm, key, genre) 
 								VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
@@ -57,8 +49,8 @@ func (r ProjectRepo) CreateProject(ctx context.Context, project *proto_projects.
 	return codes.OK, nil
 }
 
-func (r ProjectRepo) UpdateProject(ctx context.Context, project *proto_projects.ProjectInfo) (code codes.Code, err error) {
-	const sql = "UPDATE projects SET name=$2, description=$3, public=$4, bpm=$5, key=$6, genre=$7, mood=$8 WHERE id=$1 RETURNING *"
+func (r ProjectRepo) UpdateProject(ctx context.Context, project *projects.ProjectInfo) (code codes.Code, err error) {
+	const sql = "UPDATE projects SET name=$2, description=$3, public=$4, bpm=$5, key=$6, genre=$7, daw=$8 WHERE id=$1 RETURNING *"
 
 	var log = logger.GetGrpcLogger(ctx)
 
@@ -66,6 +58,7 @@ func (r ProjectRepo) UpdateProject(ctx context.Context, project *proto_projects.
 		project.Id, project.Metadata.Name,
 		project.Metadata.Description, project.Metadata.Public,
 		project.Metadata.Bpm, project.Metadata.Key,
+		project.Metadata.Daw.String(),
 	)
 
 	if err != nil {
@@ -84,18 +77,21 @@ func (r ProjectRepo) UpdateProject(ctx context.Context, project *proto_projects.
 	return codes.OK, nil
 }
 
-func (r ProjectRepo) GetProject(ctx context.Context, projectID *proto_projects.ProjectId) (*proto_projects.ProjectInfo, codes.Code, error) {
-	const sql = "SELECT name, description, public, bpm, key, genre, mood,  FROM projects WHERE id = $1"
+func (r ProjectRepo) GetProject(ctx context.Context, projectID *projects.ProjectId) (*projects.ProjectInfo, codes.Code, error) {
+	const sql = "SELECT name, description, public, bpm, key, genre, daw FROM projects WHERE id = $1"
 
 	var log = logger.GetGrpcLogger(ctx)
-	var projectMeta = &proto_projects.ProjectMeta{}
+	var projectMeta = &projects.ProjectMeta{}
+	var daw string
 
 	err := r.Pool.QueryRow(ctx, sql, projectID.GetId()).Scan(
-		&projectMeta.Name, &projectMeta.Description,
-		&projectMeta.Public, &projectMeta.Bpm, &projectMeta.Key, &projectMeta.Genre,
+		&projectMeta.Name, &projectMeta.Description, &projectMeta.Public,
+		&projectMeta.Bpm, &projectMeta.Key, &projectMeta.Genre,
+		&daw,
 	)
+	projectMeta.Daw = projects.DAW(projects.DAW_value[daw])
 
-	project := &proto_projects.ProjectInfo{
+	project := &projects.ProjectInfo{
 		Metadata: projectMeta,
 	}
 
@@ -111,7 +107,7 @@ func (r ProjectRepo) GetProject(ctx context.Context, projectID *proto_projects.P
 	return project, codes.OK, nil
 }
 
-func (r ProjectRepo) DeleteProject(ctx context.Context, projectID *proto_projects.ProjectId) (codes.Code, error) {
+func (r ProjectRepo) DeleteProject(ctx context.Context, projectID *projects.ProjectId) (codes.Code, error) {
 	const sql = "DELETE FROM projects WHERE id = $1"
 
 	log := logger.GetGrpcLogger(ctx)
@@ -132,12 +128,14 @@ func (r ProjectRepo) DeleteProject(ctx context.Context, projectID *proto_project
 	return codes.OK, nil
 }
 
-func (r ProjectRepo) ListUsers(ctx context.Context, stream proto_projects.Projects_ListServer, opt *proto_projects.ListOptions) (codes.Code, error) {
-	const sql = "SELECT id, name, description, public, bpm, key, genre, mood FROM projects LIMIT $1 OFFSET $2"
+func (r ProjectRepo) ListProjects(ctx context.Context, stream projects.Projects_ListServer, opt *projects.ListOptions) (codes.Code, error) {
+	const sql = "SELECT id, name, description, public, bpm, key, genre, daw FROM projects LIMIT $1 OFFSET $2"
 	var (
 		log         = logger.GetGrpcLogger(ctx)
-		project     = &proto_projects.ProjectInfo{}
-		projectMeta = &proto_projects.ProjectMeta{}
+		project     = &projects.ProjectInfo{}
+		projectMeta = &projects.ProjectMeta{}
+		projectID   = &projects.ProjectId{}
+		daw         string
 	)
 
 	rows, err := r.Pool.Query(ctx, sql, opt.GetPaging().GetCount(), opt.GetPaging().GetPage())
@@ -148,14 +146,17 @@ func (r ProjectRepo) ListUsers(ctx context.Context, stream proto_projects.Projec
 
 	for rows.Next() {
 		err = rows.Scan(
-			&project.Id, &projectMeta.Name,
+			&projectID.Id, &projectMeta.Name,
 			&projectMeta.Description, &projectMeta.Public,
 			&projectMeta.Bpm, &projectMeta.Key,
+			&projectMeta.Genre, &daw,
 		)
+		projectMeta.Daw = projects.DAW(projects.DAW_value[daw])
 		if err != nil {
 			log.Error(err)
 			return codes.Internal, err
 		}
+		project.Id = projectID
 		project.Metadata = projectMeta
 		if err := stream.Send(project); err != nil {
 			log.Error(err)
