@@ -44,6 +44,6 @@ func (s versionsGrpcImpl) List(in *versions.ListOptions, stream versions.Version
 
 func (s versionsGrpcImpl) Delete(ctx context.Context, in *versions.VersionInfo) (*common.EmptyMessage, error) {
 	logger.EndpointHit(ctx)
-	return nil, nil
+	return service.VersionDelete(ctx, in)
 
 }
