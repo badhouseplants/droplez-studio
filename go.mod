@@ -3,7 +3,7 @@ module github.com/droplez/droplez-studio
 go 1.17
 
 require (
-	github.com/droplez/droplez-go-proto v0.0.1
+	github.com/droplez/droplez-go-proto v0.0.2
 	github.com/golang-migrate/migrate/v4 v4.15.0
 	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -14,6 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.9.0
 	google.golang.org/grpc v1.40.0
+	google.golang.org/protobuf v1.27.1
 )
 
 require (
@@ -46,7 +47,6 @@ require (
 	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf // indirect
 	golang.org/x/text v0.3.6 // indirect
 	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71 // indirect
-	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.63.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
